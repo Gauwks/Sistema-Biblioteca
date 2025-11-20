@@ -1,7 +1,8 @@
 <?php  
 include_once("conexao.php");
 
-// Se o formulário for enviado:
+$autores = $conn->query("SELECT id_autor, nome FROM autor ORDER BY nome ASC");
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $titulo        = $_POST['titulo'];
@@ -9,20 +10,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $dtLancamento  = $_POST['dtLancamento'];
     $qtdPaginas    = $_POST['qtdPaginas'];
     $editora       = $_POST['editora'];
-    $autor         = $_POST['autor'];
+    $autorID       = $_POST['autor'] === "" ? "NULL" : $_POST['autor'];
 
-    // Inserindo no banco
     $sql = "INSERT INTO livros (titulo, categoria, data_lancamento, qtd_pagina, editora, fk_autor)
-            VALUES ('$titulo', '$categoria', '$dtLancamento', '$qtdPaginas', '$editora', '$autor')";
+            VALUES ('$titulo', '$categoria', '$dtLancamento', '$qtdPaginas', '$editora', $autorID)";
 
     if ($conn->query($sql)) {
-        echo "<p style='color: green;'>Livro cadastrado com sucesso!</p>";
+        echo "<script>alert('Livro cadastrado com sucesso!'); window.location='livros.php';</script>";
+        exit;
     } else {
-        echo "<p style='color: red;'>Erro ao cadastrar: " . $conn->error . "</p>";
+        echo "<script>alert('Erro ao cadastrar: ".$conn->error."');</script>";
     }
 }
 
-// Buscar os livros já cadastrados
 $lista = $conn->query("SELECT l.titulo, l.categoria, l.data_lancamento, a.nome AS autor
                        FROM livros l
                        LEFT JOIN autor a ON l.fk_autor = a.id_autor
@@ -34,7 +34,6 @@ $lista = $conn->query("SELECT l.titulo, l.categoria, l.data_lancamento, a.nome A
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta author="Maria Clara da Silva Jacinto, Elizabete Silva Oliveira e Rafael D'Angelo">
     <link rel="stylesheet" href="style.css">
     <title>Livros</title>
 </head>
@@ -61,37 +60,43 @@ $lista = $conn->query("SELECT l.titulo, l.categoria, l.data_lancamento, a.nome A
                 <li>
                     <strong><?= $l['titulo'] ?></strong> – 
                     <?= $l['categoria'] ?> (<?= $l['data_lancamento'] ?>)  
-                    — Autor: <?= $l['autor'] ?>
+                    — Autor: <?= $l['autor'] ?? "Desconhecido" ?>
                 </li>
             <?php endwhile; ?>
         </ul>
     <?php else: ?>
         <p>Nenhum livro cadastrado ainda.</p>
     <?php endif; ?>
-
 </section>
 
 <section class="cadastrarLivro">
     <h1>Cadastrar livro:</h1>
 
     <form action="livros.php" method="POST">
-        <label for="titulo">Título</label>
-        <input type="text" name="titulo" id="titulo" maxlength="100" required>
+        <label>Título</label>
+        <input type="text" name="titulo" required>
 
-        <label for="categoria">Categoria</label>
-        <input type="text" name="categoria" id="categoria" maxlength="50" required>
+        <label>Categoria</label>
+        <input type="text" name="categoria" required>
 
-        <label for="dtLancamento">Data de Lançamento</label>
-        <input type="date" name="dtLancamento" id="dtLancamento" required>
+        <label>Data de Lançamento</label>
+        <input type="date" name="dtLancamento" required>
 
-        <label for="qtdPaginas">Quantidade de Páginas</label>
-        <input type="number" name="qtdPaginas" id="qtdPaginas" min="1" max="5000" required>
+        <label>Quantidade de Páginas</label>
+        <input type="number" name="qtdPaginas" required>
 
-        <label for="editora">Editora</label>
-        <input type="text" name="editora" id="editora" maxlength="80" required>
+        <label>Editora</label>
+        <input type="text" name="editora" required>
 
-        <label for="autor">ID do Autor</label>
-        <input type="number" name="autor" id="autor" min="1" required>
+        <label>Autor</label>
+        <select name="autor">
+            <option value="">Autor Desconhecido</option>
+            <?php while($a = $autores->fetch_assoc()): ?>
+                <option value="<?= $a['id_autor'] ?>">
+                    <?= $a['nome'] ?>
+                </option>
+            <?php endwhile; ?>
+        </select>
 
         <button type="submit">Cadastrar</button>
     </form>

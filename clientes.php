@@ -12,9 +12,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             VALUES ('$nome', '$idade', '$rg', '$email')";
 
     if ($conn->query($sql)) {
-        echo "<p style='color: green;'>Cliente cadastrado com sucesso!</p>";
+        echo "<script>alert('Cliente cadastrado com sucesso!'); window.location='clientes.php';</script>";
+        exit;
     } else {
-        echo "<p style='color: red;'>Erro ao cadastrar: " . $conn->error . "</p>";
+        echo "<script>alert('Erro ao cadastrar: ".$conn->error."');</script>";
     }
 }
 
@@ -23,8 +24,6 @@ $lista = $conn->query("SELECT nome, idade, rg, email
                        ORDER BY id_cliente DESC 
                        LIMIT 5");
 ?>
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
